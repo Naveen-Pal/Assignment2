@@ -16,12 +16,12 @@ class CustomTopology(Topo):
     
     def build(self):
         # Add hosts
-        h1 = self.addHost('h1', ip='10.0.0.1/12')
-        h2 = self.addHost('h2', ip='10.0.0.2/12')
-        h3 = self.addHost('h3', ip='10.0.0.3/12')
-        h4 = self.addHost('h4', ip='10.0.0.4/12')
+        h1 = self.addHost('h1', ip='10.0.0.1/24')
+        h2 = self.addHost('h2', ip='10.0.0.2/24')
+        h3 = self.addHost('h3', ip='10.0.0.3/24')
+        h4 = self.addHost('h4', ip='10.0.0.4/24')
         
-        dns = self.addHost('dns', ip='10.0.2.0/12')
+        dns = self.addHost('dns', ip='10.0.0.5/24')
         
         # Add switches
         s1 = self.addSwitch('s1')
@@ -56,7 +56,6 @@ def runTopology():
     for host in net.hosts:
         print(f"  {host.name}: {host.IP()}")
     
-    print("\n*** Testing connectivity")
     net.pingAll() # This will now show 0% dropped
 
     CLI(net)

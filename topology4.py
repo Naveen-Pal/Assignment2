@@ -56,27 +56,28 @@ def runTopology():
     
     for host in net.hosts:
         print(f"  {host.name}: {host.IP()}")
-    # for host in net.hosts:
-    #     # Skip the DNS server itself
-    #     if host.name == 'dns':
-    #         continue
-    #     host.cmd(f'echo "nameserver 10.0.0.5 \n nameserver 8.8.8.8" > /etc/resolv.conf')
+        
+    for host in net.hosts:
+        if host.name == 'dns':
+            continue
+        host.cmd(f'echo "nameserver 10.0.0.5" > /etc/resolv.conf')
+
     dns = net.get('dns')
     dns.cmd('python dns_server.py &')
     time.sleep(2)
 
     pid = dns.cmd('pgrep -f dns_server.py').strip()
     if pid:
-        print(f"  ✓ DNS server running (PID: {pid})")
+        print(f"  DNS server running (PID: {pid})")
     else:
-        print("  ✗ Failed to start DNS server")
+        print("  Failed to start DNS server")
         print("  Check log: dns cat /tmp/dns.log")
 
-    for i in range(1,5):
-        h = net.get(f'h{i}')
-        print(h.name)
-        result = h.cmd(f'python dns_client.py PCAPs_DNS_Resolver/PCAP_{i}_H{i}_f.pcap')
-        # print(result)
+    # for i in range(1,5):
+    #     h = net.get(f'h{i}')
+    #     print(h.name)
+    #     result = h.cmd(f'python dns_client.py PCAPs_DNS_Resolver/PCAP_{i}_H{i}_f.pcap')
+    #     print(result)
     
     print("\n*** Testing connectivity")
     net.pingAll() # This will now show 0% dropped

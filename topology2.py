@@ -66,7 +66,7 @@ def extract_domains(pcap_file):
             if pkt.haslayer('DNS'):
                 total_bytes += len(pkt)
 
-        return list(set(domains)), total_bytes
+        return domains, total_bytes
 
     except Exception as e:
         print(f"Error reading pcap: {e}", file=sys.stderr)
