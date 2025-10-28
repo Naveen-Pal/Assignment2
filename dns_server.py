@@ -47,7 +47,7 @@ class DNSServer:
     TYPE_A = 1
     TYPE_AAAA = 28
     
-    def __init__(self, port=5353, external_dns=['8.8.8.8', '1.1.1.1'], records_file='dns_records.json'):
+    def __init__(self, port=53, external_dns=['8.8.8.8', '1.1.1.1'], records_file='dns_records.json'):
         self.port = port
         self.external_dns = external_dns
         self.cache = DNSCache()
@@ -63,7 +63,7 @@ class DNSServer:
         else:
             default_records = {
                 'example.local': {'A': '192.168.1.100'},
-                'test.local': {'A': '10.0.0.50'}
+                'test.local': {'A': '10.0.0.5'}
             }
             with open(filename, 'w') as f:
                 json.dump(default_records, f, indent=2)
@@ -112,6 +112,8 @@ class DNSServer:
     
     def build_dns_response(self, query, ip_address):
         """Build DNS response packet"""
+        import socket
+
         transaction_id = query['transaction_id']
         domain = query['domain']
         flags = 0x8180
@@ -125,13 +127,9 @@ class DNSServer:
         response += struct.pack('!HH', query['qtype'], query['qclass'])
         
         # Answer section
-        response += b'\xc0\x0c'
-        response += struct.pack('!HH', query['qtype'], query['qclass'])
-        response += struct.pack('!I', 300)
-        
-        ip_parts = [int(x) for x in ip_address.split('.')]
-        response += struct.pack('!H', 4)
-        response += bytes(ip_parts)
+        response += b'\xc0\x0c'  # pointer to domain name
+        response += struct.pack('!HHIH', query['qtype'], query['qclass'], 300, 4)
+        response += socket.inet_aton(ip_address)  # ✅ Correct IPv4 encoding
         
         return response
     
@@ -153,6 +151,7 @@ class DNSServer:
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             sock.settimeout(5)
+            
             sock.sendto(query_data, (dns_server, 53))
             response, _ = sock.recvfrom(512)
             sock.close()
@@ -198,6 +197,7 @@ class DNSServer:
             })
             self.log(f"Found in local records: {domain} -> {local_result}")
             self.save_log(log_entry)
+            print(f"[DEBUG] building response for {query['domain']} -> {ip_address}")
             response = self.build_dns_response(query, local_result)
             self.socket.sendto(response, addr)
             return
@@ -228,7 +228,7 @@ class DNSServer:
             ext_start = time.time()
             response = self.query_external_dns(data, dns_server)
             rtt = (time.time() - ext_start) * 1000
-            
+            print(response)
             if response:
                 log_entry.update({
                     'resolution_mode': 'External DNS',
@@ -282,7 +282,7 @@ class DNSServer:
 
 def main():
     parser = argparse.ArgumentParser(description='DNS Server')
-    parser.add_argument('-p', '--port', type=int, default=5353, help='Port to listen on (default: 5353)')
+    parser.add_argument('-p', '--port', type=int, default=53, help='Port to listen on (default: 53)')
     parser.add_argument('-d', '--dns', nargs='+', default=['8.8.8.8', '1.1.1.1'], 
                         help='External DNS servers (default: 8.8.8.8 1.1.1.1)')
     parser.add_argument('-r', '--records', default='dns_records.json',

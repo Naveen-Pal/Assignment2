@@ -61,12 +61,13 @@ def runTopology():
         if host.name == 'dns':
             continue
         host.cmd(f'echo "nameserver 10.0.0.5" > /etc/resolv.conf')
+    #     print("host: ", host.name)
 
     dns = net.get('dns')
-    dns.cmd('python dns_server.py &')
+    dns.cmd('python new_server.py &')
     time.sleep(2)
 
-    pid = dns.cmd('pgrep -f dns_server.py').strip()
+    pid = dns.cmd('pgrep -f new_server.py').strip()
     if pid:
         print(f"  DNS server running (PID: {pid})")
     else:

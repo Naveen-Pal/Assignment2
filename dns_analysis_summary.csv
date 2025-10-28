@@ -1,0 +1,2 @@
+Total Queries,Successful Resolutions,Failed Resolutions,Cache Hits,Cache %,Average Latency (ms),Average Throughput (bytes/sec)
+400,226,88,8,2.0,211147.65,0.87

@@ -171,7 +171,6 @@ def runTopology():
     print("\n*** Host IPs ***")
     for host in net.hosts:
         print(f"  {host.name}: {host.IP()}")
-    # Give internet access to hosts (assuming your VM is online)
     for h in net.hosts:
         h.cmd("echo 'nameserver 8.8.8.8' > /etc/resolv.conf")
 

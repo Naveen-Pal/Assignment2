@@ -42,9 +42,9 @@ def resolve_dns(domain, dns_server='10.0.0.5'):
         query += b'\x00'
         query += struct.pack('!HH', 1, 1)
         
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)     
         sock.settimeout(3)
-        sock.sendto(query, (dns_server, 5353))
+        sock.sendto(query, (dns_server, 53))
         response, _ = sock.recvfrom(512)
         sock.close()
         
